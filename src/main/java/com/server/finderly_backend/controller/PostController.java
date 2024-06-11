@@ -1,44 +1,69 @@
 package com.server.finderly_backend.controller;
 
-import com.server.finderly_backend.dto.PostDto;
+import com.server.finderly_backend.dto.ResponseDto;
+import com.server.finderly_backend.dto.post.FilteredPostDto;
+import com.server.finderly_backend.dto.post.RegisterPostDto;
+import com.server.finderly_backend.service.PostService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("post")
+@Validated
 public class PostController {
+
+    private final PostService postService;
+
+    public PostController(PostService postService){
+        this.postService = postService;
+    }
 
     // 게시글 검색
     @GetMapping("search")
-    public String searchPost(@RequestParam String keyword) {
-        return "search";
+    public ResponseEntity<?> searchPost(
+            @RequestParam(value = "postCategory") int postCategory,
+            @RequestParam(value = "keyword") String keyword
+    ) {
+        if(keyword == null || keyword.isEmpty()){
+            return new ResponseEntity<>(new ResponseDto("검색어를 입력해주세요."), HttpStatus.BAD_REQUEST);
+        }
+        return postService.searchByPostName(postCategory,keyword);
     }
 
     // 게시글 리스트 조회
     @GetMapping
-    public String getPostList(@RequestParam(value = "postCategory") int postCategory) {
-        return "get";
+    public ResponseEntity<List<FilteredPostDto>> getPostList(@RequestParam(value = "postCategory") int postCategory) {
+        return postService.getAllPostList(postCategory);
     }
 
     // 게시글 상세 조회
     @GetMapping("detail")
-    public String getPostDetail(
+    public ResponseEntity<?> getPostDetail(
             @RequestParam(value = "postCategory") int postCategory,
-            @RequestParam(value = "postId") String postId,
-            @RequestParam(value = "userId") String userId
+            @RequestParam(value = "postId") String postId
     ) {
-        return "detail";
+        return postService.getPost(postCategory, postId);
     }
 
     // 게시글 삭제
     @DeleteMapping
-    public String deletePost(@RequestParam String postId) {
-        return "delete " + postId;
+    public ResponseEntity<ResponseDto> deletePost(
+            @RequestParam int postCategory,
+            @RequestParam String postId
+    ) {
+        return postService.deletePost(postCategory, postId);
     }
 
     // 게시글 등록
-    @PostMapping
-    public String registerPost(@RequestBody PostDto postDto) {
-        return "post : " + postDto.toString();
+    @PostMapping(value = "register", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> registerPost(@Valid @RequestBody RegisterPostDto registerPostDto) {
+        return postService.addPost(registerPostDto);
     }
 
 }

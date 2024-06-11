@@ -1,43 +1,59 @@
 package com.server.finderly_backend.controller;
 
-import com.server.finderly_backend.dto.LostDto;
+import com.server.finderly_backend.dto.ResponseDto;
+import com.server.finderly_backend.dto.lost.FilteredLostDto;
+import com.server.finderly_backend.dto.lost.RegisterLostDto;
+import com.server.finderly_backend.service.LostService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
+@Validated
 @RestController
 @RequestMapping("lost")
 public class LostController {
 
+    private final LostService lostService;
+
+    public LostController(LostService lostService) {
+        this.lostService = lostService;
+    }
+
     // 분실물 검색
     @GetMapping("search")
-    public String lostSearch(@RequestParam String lostName) {
-        return "lost5";
+    public ResponseEntity<?> searchLost(@RequestParam String keyword) {
+        if(keyword == null || keyword.isEmpty()){
+            return new ResponseEntity<>(new ResponseDto("검색어를 입력해주세요."), HttpStatus.BAD_REQUEST);
+        }
+        return lostService.searchLostByLostName(keyword);
     }
 
     // 분실물 리스트 조회
     @GetMapping
-    public String lostList() {
-        return "lost list";
+    public ResponseEntity<List<FilteredLostDto>> getAllLostList() {
+        return lostService.getAllLostList();
     }
 
     // 분실물 삭제
-    @DeleteMapping
-    public String lostDelete(@RequestParam String lostId) {
-        return "lost delete";
+    @DeleteMapping("delete")
+    public ResponseEntity<?> deleteLost(@RequestParam String lostId) {
+        return lostService.deleteLost(lostId);
     }
 
     // 분실물 상세 조회
     @GetMapping("detail")
-    public String lost3(
-            @RequestParam(value = "lostId") String lostId,
-            @RequestParam(value = "userId") String userId
-    ) {
-        return "lost detail";
+    public ResponseEntity<?> lostDetail(@RequestParam(value = "lostId") String lostId) {
+        return lostService.lostDetail(lostId);
     }
 
     // 분실물 등록
-    @PostMapping
-    public String lost(@RequestBody LostDto lostDto) {
-        return "regist lost : " + lostDto.toString();
+    @PostMapping("register")
+    public ResponseEntity<?> registerLost(@Valid @RequestBody RegisterLostDto registerLostDto) {
+        return lostService.registerLost(registerLostDto);
     }
 
 }

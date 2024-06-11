@@ -1,4 +1,4 @@
-package com.server.finderly_backend.dto;
+package com.server.finderly_backend.dto.comment;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -6,8 +6,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CommentDto {
+    private String commentId;
     private String userId;
-    private String postId;
     private String content;
     private Boolean secretCheck;
 }
